@@ -1,5 +1,4 @@
-﻿/*
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -8,7 +7,11 @@ namespace AutoScreenShot.Configuration
     internal class PluginConfig
     {
         public static PluginConfig Instance { get; set; }
-        public virtual int IntValue { get; set; } = 42; // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+        public virtual int MinSec { get; set; } = 6;
+        public virtual int MaxSec { get; set; } = 120;
+        public virtual int PositionScale { get; set; } = 10;
+        public virtual float MinFoV { get; set; } = 30;
+        public virtual float MaxFoV { get; set; } = 110;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
@@ -35,4 +38,3 @@ namespace AutoScreenShot.Configuration
         }
     }
 }
-*/

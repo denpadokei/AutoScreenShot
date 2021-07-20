@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AutoScreenShot.Configuration;
+using AutoScreenShot.Extention;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -56,13 +58,13 @@ namespace AutoScreenShot
             if (!this._isSupprot) {
                 return;
             }
-            var textuer = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
-            var oldtarget = this._ssCamera.targetTexture;
-            this._ssCamera.targetTexture = textuer;
+            this.SetCameraPos(this.CreateCameraPos());
+            var texture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
+            var oldtextuer = this._ssCamera.targetTexture;
+            this._ssCamera.targetTexture = texture;
             this._ssCamera.Render();
-            this._ssCamera.targetTexture = oldtarget;
-
-            AsyncGPUReadback.Request(textuer, 0, req =>
+            this._ssCamera.targetTexture = oldtextuer;
+            AsyncGPUReadback.Request(texture, 0, req =>
             {
                 if (req.hasError) {
                     return;
@@ -70,13 +72,34 @@ namespace AutoScreenShot
                 _ = Task.Run(() =>
                 {
                     var data = req.GetData<byte>().ToArray();
-                    var format = textuer.graphicsFormat;
+                    var format = texture.graphicsFormat;
                     var pngBytes = ImageConversion.EncodeArrayToJPG(data, format, (uint)this.width, (uint)this.height);
                     using (var fs = File.Create(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"))) {
                         fs.Write(pngBytes, 0, pngBytes.Length);
                     }
                 });
             });
+        }
+
+        private void SetCameraPos(Vector3 pos)
+        {
+            this._ssCamera.transform.position = pos;
+            this._ssCamera.fieldOfView = this._random.NextFloat(this.minFoV, this.maxFoV);
+            this._ssCamera.transform.LookAt(Camera.main.transform);
+        }
+
+        private Vector3 CreateCameraPos()
+        {
+            return new Vector3(
+                this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f),
+                this._random.NextFloat(0, this._posScale * 0.5f),
+                this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f));
+        }
+
+        private float NextFloat(float min, float max)
+        {
+            var diff = max - min;
+            return min + (float)(this._random.NextDouble() * diff);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -85,22 +108,39 @@ namespace AutoScreenShot
         private bool _isSupprot;
         private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
         private DateTime _nextShootTime;
-        private System.Random _random = new System.Random();
         private int width;
         private int height;
-
-        private int minsec = 10;
-        private int maxsec = 11;
+        private System.Random _random;
+        private int minsec;
+        private int maxsec;
+        private float minFoV;
+        private float maxFoV;
+        private float _posScale;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        private void Constractor()
+        private void Constractor(IAudioTimeSource controller)
         {
-            this._ssCamera = new GameObject("Prompt", typeof(Camera)).GetComponent<Camera>();
+            this._random = new System.Random(Environment.TickCount);
+
+            this.minsec = controller.songEndTime < PluginConfig.Instance.MinSec ? (int)(controller.songEndTime / 2) : PluginConfig.Instance.MinSec;
+            this.maxsec = controller.songEndTime < PluginConfig.Instance.MaxSec || PluginConfig.Instance.MinSec < this.minsec ? (int)controller.songEndTime : PluginConfig.Instance.MaxSec;
+
+            this.minFoV = PluginConfig.Instance.MinFoV;
+            this.maxFoV = PluginConfig.Instance.MinFoV < this.minFoV ? this.minFoV : PluginConfig.Instance.MaxFoV;
+
+            this._posScale = PluginConfig.Instance.PositionScale;
+
+            this._ssCamera = Instantiate(Camera.main.gameObject).GetComponent<Camera>();
+            this._ssCamera.gameObject.name = "Prompt";
+            this._ssCamera.gameObject.tag = "Untagged";
+            this._ssCamera.name = "Prompt Camera";
             this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
             this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
             this._ssCamera.cullingMask = -1;
+
+            this._ssCamera.targetTexture = new RenderTexture(1, 1, 24);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -140,6 +180,7 @@ namespace AutoScreenShot
         private void OnDestroy()
         {
             Plugin.Log?.Debug($"{name}: OnDestroy()");
+            Destroy(this._ssCamera.gameObject);
         }
         #endregion
     }
