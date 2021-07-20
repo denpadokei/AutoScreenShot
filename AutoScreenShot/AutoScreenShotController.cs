@@ -1,0 +1,146 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
+using Zenject;
+
+namespace AutoScreenShot
+{
+    /// <summary>
+    /// Monobehaviours (scripts) are added to GameObjects.
+    /// For a full list of Messages a Monobehaviour can receive from the game, see https://docs.unity3d.com/ScriptReference/MonoBehaviour.html.
+    /// </summary>
+    public class AutoScreenShotController : MonoBehaviour, IInitializable
+    {
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // プロパティ
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // コマンド
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // コマンド用メソッド
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // オーバーライドメソッド
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // パブリックメソッド
+        public void Initialize()
+        {
+            if (!SystemInfo.supportsAsyncGPUReadback) {
+                this._isSupprot = false;
+                Plugin.Log.Debug("Not supproted.");
+                return;
+            }
+            this._isSupprot = true;
+            if (!Directory.Exists(_dataDir)) {
+                Directory.CreateDirectory(_dataDir);
+            }
+            this.width = Screen.width;
+            this.height = Screen.height;
+            this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
+        }
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // プライベートメソッド
+        private void Shoot()
+        {
+            if (!this._isSupprot) {
+                return;
+            }
+            var textuer = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
+            var oldtarget = this._ssCamera.targetTexture;
+            this._ssCamera.targetTexture = textuer;
+            this._ssCamera.Render();
+            this._ssCamera.targetTexture = oldtarget;
+
+            AsyncGPUReadback.Request(textuer, 0, req =>
+            {
+                if (req.hasError) {
+                    return;
+                }
+                _ = Task.Run(() =>
+                {
+                    var data = req.GetData<byte>().ToArray();
+                    var format = textuer.graphicsFormat;
+                    var pngBytes = ImageConversion.EncodeArrayToJPG(data, format, (uint)this.width, (uint)this.height);
+                    using (var fs = File.Create(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"))) {
+                        fs.Write(pngBytes, 0, pngBytes.Length);
+                    }
+                });
+            });
+        }
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // メンバ変数
+        private Camera _ssCamera;
+        private bool _isSupprot;
+        private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
+        private DateTime _nextShootTime;
+        private System.Random _random = new System.Random();
+        private int width;
+        private int height;
+
+        private int minsec = 10;
+        private int maxsec = 11;
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // 構築・破棄
+        [Inject]
+        private void Constractor()
+        {
+            this._ssCamera = new GameObject("Prompt", typeof(Camera)).GetComponent<Camera>();
+            this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
+            this._ssCamera.cullingMask = -1;
+        }
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region Monobehaviour Messages
+        // These methods are automatically called by Unity, you should remove any you aren't using.
+        /// <summary>
+        /// Only ever called once, mainly used to initialize variables.
+        /// </summary>
+        private void Awake()
+        {
+            // For this particular MonoBehaviour, we only want one instance to exist at any time, so store a reference to it in a static property
+            //   and destroy any that are created while one already exists.
+            
+            Plugin.Log?.Debug($"{name}: Awake()");
+        }
+        /// <summary>
+        /// Only ever called once on the first frame the script is Enabled. Start is called after any other script's Awake() and before Update().
+        /// </summary>
+        private void Start()
+        {
+
+        }
+
+        /// <summary>
+        /// Called every frame if the script is enabled.
+        /// </summary>
+        private void Update()
+        {
+            if (this._nextShootTime < DateTime.Now) {
+                this.Shoot();
+                this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
+            }
+        }
+        /// <summary>
+        /// Called when the script is being destroyed.
+        /// </summary>
+        private void OnDestroy()
+        {
+            Plugin.Log?.Debug($"{name}: OnDestroy()");
+        }
+        #endregion
+    }
+}
