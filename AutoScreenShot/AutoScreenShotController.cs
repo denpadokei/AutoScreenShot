@@ -95,12 +95,6 @@ namespace AutoScreenShot
                 this._random.NextFloat(0, this._posScale * 0.5f),
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f));
         }
-
-        private float NextFloat(float min, float max)
-        {
-            var diff = max - min;
-            return min + (float)(this._random.NextDouble() * diff);
-        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
