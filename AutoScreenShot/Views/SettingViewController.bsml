@@ -1,0 +1,9 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <settings-container>
+    <toggle-setting text='Enable' value='enable'></toggle-setting>
+    <toggle-setting text='Show in menu' value='show-in-menu'></toggle-setting>
+    <slider-setting text='Picture count' value ='pictuer-count' integer-only='true' min='-1' max='500' hover-hint='-1 = unlimited'></slider-setting>
+    <slider-setting text='Min FoV' value ='min-fov' increment='0.5' min='0.5' max='200.0'></slider-setting>
+    <slider-setting text='Max Fov' value='max-fov' increment='0.5' min='0.5' max='200.0'></slider-setting>
+  </settings-container>
+</bg>

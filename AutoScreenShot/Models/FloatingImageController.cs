@@ -1,4 +1,5 @@
-﻿using AutoScreenShot.Extention;
+﻿using AutoScreenShot.Configuration;
+using AutoScreenShot.Extention;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -38,6 +39,9 @@ namespace AutoScreenShot.Models
         private void CreateCanvases()
         {
             Plugin.Log.Debug("Create canvases call.");
+            if (!Directory.Exists(_dataDir)) {
+                Directory.CreateDirectory(_dataDir);
+            }
             var files = Directory.EnumerateFiles(_dataDir, "*.jpg", SearchOption.AllDirectories).ToList();
             while (files.Any()) {
                 var index = _random.Next(0, files.Count - 1);
@@ -49,7 +53,7 @@ namespace AutoScreenShot.Models
                 }
                 canvas.Init(file);
                 this._canvases.Add(canvas);
-                if (500 < this._canvases.Count) {
+                if ((uint)PluginConfig.Instance.PictureCount < this._canvases.Count) {
                     break;
                 }
                 files.RemoveAt(index);
@@ -102,6 +106,9 @@ namespace AutoScreenShot.Models
         }
         private void OnEnable()
         {
+            if (!PluginConfig.Instance.ShowPictureInMenu) {
+                return;
+            }
             this.CreateCanvases();
         }
 

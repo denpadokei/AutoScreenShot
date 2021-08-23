@@ -1,5 +1,9 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using SiraUtil.Converters;
+using UnityEngine;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace AutoScreenShot.Configuration
@@ -7,12 +11,20 @@ namespace AutoScreenShot.Configuration
     internal class PluginConfig
     {
         public static PluginConfig Instance { get; set; }
+        public virtual bool Enable { get; set; } = true;
         public virtual int MinSec { get; set; } = 6;
         public virtual int MaxSec { get; set; } = 120;
         public virtual int PositionScale { get; set; } = 10;
-        public virtual float MinFoV { get; set; } = 30;
+        public virtual float MinFoV { get; set; } = 15;
         public virtual float MaxFoV { get; set; } = 110;
+        public virtual bool ShowPictureInMenu { get; set; } = true;
+        public virtual int PictureCount { get; set; } = 500;
+        [UseConverter(typeof(Vector3Converter))]
+        public virtual Vector3 TargetOffset { get; set; } = Vector3.zero;
+        [UseConverter(typeof(Vector2Converter))]
+        public virtual Vector2 PictuerRenderSize { get; set; } = new Vector2(1920, 1080);
 
+        public event Action<PluginConfig> OnConfigChanged;
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
         /// </summary>
@@ -27,6 +39,7 @@ namespace AutoScreenShot.Configuration
         public virtual void Changed()
         {
             // Do stuff when the config is changed.
+            this.OnConfigChanged?.Invoke(this);
         }
 
         /// <summary>

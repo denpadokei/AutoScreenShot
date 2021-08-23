@@ -46,8 +46,8 @@ namespace AutoScreenShot
             if (!Directory.Exists(_dataDir)) {
                 Directory.CreateDirectory(_dataDir);
             }
-            this.width = Screen.width;
-            this.height = Screen.height;
+            this.width = (int)PluginConfig.Instance.PictuerRenderSize.x;
+            this.height = (int)PluginConfig.Instance.PictuerRenderSize.y;
             this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
         }
         #endregion
@@ -69,15 +69,18 @@ namespace AutoScreenShot
                 if (req.hasError) {
                     return;
                 }
-                _ = Task.Run(() =>
-                {
-                    var data = req.GetData<byte>().ToArray();
-                    var format = texture.graphicsFormat;
-                    var pngBytes = ImageConversion.EncodeArrayToJPG(data, format, (uint)this.width, (uint)this.height);
-                    using (var fs = File.Create(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"))) {
-                        fs.Write(pngBytes, 0, pngBytes.Length);
-                    }
-                });
+                var format = texture.graphicsFormat;
+                using (var data = req.GetData<byte>()) {
+                    var dataArray = data.ToArray();
+                    _ = Task.Run(() =>
+                    {
+                        var pngBytes = ImageConversion.EncodeArrayToJPG(dataArray, format, (uint)this.width, (uint)this.height);
+                        if (!Directory.Exists(_dataDir)) {
+                            Directory.CreateDirectory(_dataDir);
+                        }
+                        File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"), pngBytes);
+                    });
+                }
             });
         }
 
@@ -85,7 +88,7 @@ namespace AutoScreenShot
         {
             this._ssCamera.transform.position = pos;
             this._ssCamera.fieldOfView = this._random.NextFloat(this.minFoV, this.maxFoV);
-            this._ssCamera.transform.LookAt(Camera.main.transform);
+            this._ssCamera.transform.LookAt(this._targetGO.transform);
         }
 
         private Vector3 CreateCameraPos()
@@ -99,6 +102,7 @@ namespace AutoScreenShot
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private Camera _ssCamera;
+        private GameObject _targetGO;
         private bool _isSupprot;
         private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
         private DateTime _nextShootTime;
@@ -134,7 +138,7 @@ namespace AutoScreenShot
             this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
             this._ssCamera.cullingMask = -1;
 
-            this._ssCamera.targetTexture = new RenderTexture(1, 1, 24);
+            this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -149,6 +153,9 @@ namespace AutoScreenShot
             //   and destroy any that are created while one already exists.
             
             Plugin.Log?.Debug($"{name}: Awake()");
+            this._targetGO = new GameObject("Noctice");
+            this._targetGO.transform.SetParent(Camera.main.transform, false);
+            this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
         }
         
         /// <summary>
@@ -156,7 +163,7 @@ namespace AutoScreenShot
         /// </summary>
         private void Update()
         {
-            if (this._nextShootTime < DateTime.Now) {
+            if (PluginConfig.Instance.Enable && this._nextShootTime < DateTime.Now) {
                 this.Shoot();
                 this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
             }
@@ -168,6 +175,7 @@ namespace AutoScreenShot
         {
             Plugin.Log?.Debug($"{name}: OnDestroy()");
             Destroy(this._ssCamera.gameObject);
+            Destroy(this._targetGO);
         }
         #endregion
     }

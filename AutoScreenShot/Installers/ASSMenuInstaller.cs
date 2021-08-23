@@ -1,4 +1,5 @@
 ﻿using AutoScreenShot.Models;
+using AutoScreenShot.Views;
 using SiraUtil;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace AutoScreenShot.Installers
         public override void InstallBindings()
         {
             this.Container.BindInterfacesAndSelfTo<FloatingImageController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<SettingViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
         }
     }
 }

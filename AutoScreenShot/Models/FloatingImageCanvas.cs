@@ -1,6 +1,7 @@
 ﻿using AutoScreenShot.Extention;
 using HMUI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,29 +38,31 @@ namespace AutoScreenShot.Models
             if (!File.Exists(this._imageFilePath)) {
                 return;
             }
-            byte[] datas = null;
-            await Task.Run(() =>
-            {
-                datas = File.ReadAllBytes(this._imageFilePath);
-            }).ConfigureAwait(true);
-            var textuer = this.CreateTextuer2D(datas);
-            if (datas == null) {
-                return;
+            if (!_chashedTexture.TryGetValue(filePath, out this._texture)) {
+                byte[] datas = null;
+                await Task.Run(() =>
+                {
+                    datas = File.ReadAllBytes(this._imageFilePath);
+                }).ConfigureAwait(true);
+                var textuer = this.CreateTextuer2D(datas);
+                _chashedTexture.TryAdd(filePath, textuer);
+                this._texture = textuer;
+                if (datas == null) {
+                    return;
+                }
             }
-            this.GetImageSize(datas, out var width, out var height);
-            (this._rootCanvas.transform as RectTransform).sizeDelta = new Vector2(width * 2, height * 2);
+            (this._rootCanvas.transform as RectTransform).sizeDelta = new Vector2(this._texture.width * 2, this._texture.height * 2);
             this._rootCanvas.transform.localScale = Vector3.one * 0.001f;
             var localScale = this._rootCanvas.transform.localScale;
             this._rootCanvas.transform.localScale = new Vector3(-localScale.x, localScale.y, localScale.z);
-            if (this.Image != null) {
-                Destroy(this.Image.gameObject);
+            if (this.Image == null) {
+                this.Image = new GameObject("FloatingImage", typeof(ImageView)).GetComponent<ImageView>();
+                this.Image.rectTransform.SetParent(this._rootCanvas.transform as RectTransform, false);
+                this.Image.transform.localPosition = Vector3.zero;
+                this.Image.material = _noGlow;
             }
-            this.Image = new GameObject("FloatingImage", typeof(ImageView)).GetComponent<ImageView>();
-            this.Image.rectTransform.SetParent(this._rootCanvas.transform as RectTransform, false);
-            this.Image.rectTransform.sizeDelta = new Vector2(width, height);
-            this.Image.transform.localPosition = Vector3.zero;
-            this.Image.material = _noGlow;
-            this.Image.material.mainTexture = textuer;
+            this.Image.rectTransform.sizeDelta = new Vector2(this._texture.width, this._texture.height);
+            this.Image.material.mainTexture = this._texture;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -103,13 +106,11 @@ namespace AutoScreenShot.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
-        private static readonly float _maxheight = 2f;
-        private static readonly float _minheight = -2f;
-        private static readonly float _moveSec = 4;
-        private float _speed;
         private string _imageFilePath;
         private Canvas _rootCanvas;
         private Material _noGlow;
+        private static ConcurrentDictionary<string, Texture2D> _chashedTexture = new ConcurrentDictionary<string, Texture2D>();
+        private Texture2D _texture;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // Unity methods
@@ -125,17 +126,7 @@ namespace AutoScreenShot.Models
             this._rootCanvas = this.gameObject.AddComponent<Canvas>();
             this.gameObject.AddComponent<CurvedCanvasSettings>();
             this._rootCanvas.renderMode = RenderMode.WorldSpace;
-            
-            this._speed = (_maxheight - _minheight) / _moveSec;
-            Plugin.Log.Debug($"{this._speed}");
         }
         #endregion
-        [Flags]
-        public enum Sequence {
-            Stop = 1,
-            Move = 1 << 1,
-            Up = 1 << 2,
-            Down = 1 << 3,
-        }
     }
 }
