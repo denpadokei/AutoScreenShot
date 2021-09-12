@@ -1,14 +1,9 @@
-﻿using AutoScreenShot.Extention;
-using HMUI;
-using System;
+﻿using HMUI;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Zenject;
 
 namespace AutoScreenShot.Models
 {
@@ -44,7 +39,10 @@ namespace AutoScreenShot.Models
                 {
                     datas = File.ReadAllBytes(this._imageFilePath);
                 }).ConfigureAwait(true);
-                var textuer = this.CreateTextuer2D(datas);
+                var extention = Path.GetExtension(filePath);
+                var extentionType = string.Equals(extention, ".jpg") ? ImageExtention.JPEG : ImageExtention.PNG;
+
+                var textuer = this.CreateTextuer2D(datas, extentionType);
                 _chashedTexture.TryAdd(filePath, textuer);
                 this._texture = textuer;
                 if (datas == null) {
@@ -59,7 +57,7 @@ namespace AutoScreenShot.Models
                 this.Image = new GameObject("FloatingImage", typeof(ImageView)).GetComponent<ImageView>();
                 this.Image.rectTransform.SetParent(this._rootCanvas.transform as RectTransform, false);
                 this.Image.transform.localPosition = Vector3.zero;
-                this.Image.material = _noGlow;
+                this.Image.material = this._noGlow;
             }
             this.Image.rectTransform.sizeDelta = new Vector2(this._texture.width, this._texture.height);
             this.Image.material.mainTexture = this._texture;
@@ -67,37 +65,49 @@ namespace AutoScreenShot.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
-        private void Move()
-        {
-            this._rootCanvas.transform.position = new Vector3
+        private void Move() => this._rootCanvas.transform.position = new Vector3
                 (
                 this._rootCanvas.transform.position.x,
                 this._rootCanvas.transform.position.y + Mathf.Sin(Time.time * 0.5f) / 1000,
                 this._rootCanvas.transform.position.z
                 );
-        }
 
-        private Texture2D CreateTextuer2D(byte[] datas)
+        private Texture2D CreateTextuer2D(byte[] datas, ImageExtention extention)
         {
-            this.GetImageSize(datas, out var width, out var height);
+            this.GetImageSize(datas, extention, out var width, out var height);
             var result = new Texture2D(width, height, TextureFormat.ARGB32, false, true);
             result.LoadImage(datas);
             return result;
         }
 
-        private void GetImageSize(byte[] datas, out int width, out int height)
+        private void GetImageSize(byte[] datas, ImageExtention extention, out int width, out int height)
         {
             width = 0;
             height = 0;
 
-            for (int i = 0; i < datas.Length; i++) {
-                if (datas[i] == 0xff) {
-                    if (datas[i + 1] == 0xc0) {
-                        height = datas[i + 5] * 256 + datas[i + 6];
-                        width = datas[i + 7] * 256 + datas[i + 8];
-                        break;
+            switch (extention) {
+                case ImageExtention.JPEG:
+                    for (var i = 0; i < datas.Length; i++) {
+                        if (datas[i] == 0xff) {
+                            if (datas[i + 1] == 0xc0) {
+                                height = datas[i + 5] * 256 + datas[i + 6];
+                                width = datas[i + 7] * 256 + datas[i + 8];
+                                break;
+                            }
+                        }
                     }
-                }
+                    break;
+                case ImageExtention.PNG:
+                    var buf = new byte[8];
+                    using (var ms = new MemoryStream(datas)) {
+                        ms.Seek(16, SeekOrigin.Begin);
+                        ms.Read(buf, 0, 8);
+                    }
+                    width = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+                    height = (buf[4] << 24) | (buf[5] << 16) | (buf[6] << 8) | buf[7];
+                    break;
+                default:
+                    break;
             }
         }
         #endregion
@@ -109,19 +119,16 @@ namespace AutoScreenShot.Models
         private string _imageFilePath;
         private Canvas _rootCanvas;
         private Material _noGlow;
-        private static ConcurrentDictionary<string, Texture2D> _chashedTexture = new ConcurrentDictionary<string, Texture2D>();
+        private static readonly ConcurrentDictionary<string, Texture2D> _chashedTexture = new ConcurrentDictionary<string, Texture2D>();
         private Texture2D _texture;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // Unity methods
-        public void Update()
-        {
-            this.Move();
-        }
+        public void Update() => this.Move();
         public void Awake()
         {
-            if (_noGlow == null) {
-                _noGlow = Instantiate(Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(x => x.name == "UINoGlow"));
+            if (this._noGlow == null) {
+                this._noGlow = Instantiate(Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(x => x.name == "UINoGlow"));
             }
             this._rootCanvas = this.gameObject.AddComponent<Canvas>();
             this.gameObject.AddComponent<CurvedCanvasSettings>();

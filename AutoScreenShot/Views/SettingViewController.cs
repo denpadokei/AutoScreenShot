@@ -1,13 +1,8 @@
 ﻿using AutoScreenShot.Configuration;
-using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Zenject;
 
@@ -17,7 +12,7 @@ namespace AutoScreenShot.Views
     public class SettingViewController : BSMLAutomaticViewController, IInitializable
     {
         // For this method of setting the ResourceName, this class must be the first class in the file.
-        public string ResourceName => string.Join(".", GetType().Namespace, GetType().Name);
+        public string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name);
 
         public void Initialize()
         {
@@ -28,15 +23,9 @@ namespace AutoScreenShot.Views
             this.PictureCount = PluginConfig.Instance.PictureCount;
             BSMLSettings.instance.AddSettingsMenu("AutoScreenShot", this.ResourceName, this);
         }
-        private void OnDisable()
-        {
-            PluginConfig.Instance.OnConfigChanged -= this.OnConfigChanged;
-        }
+        private void OnDisable() => PluginConfig.Instance.OnConfigChanged -= this.OnConfigChanged;
 
-        private void OnEnable()
-        {
-            PluginConfig.Instance.OnConfigChanged += this.OnConfigChanged;
-        }
+        private void OnEnable() => PluginConfig.Instance.OnConfigChanged += this.OnConfigChanged;
 
         private void OnConfigChanged(PluginConfig obj)
         {
@@ -47,7 +36,7 @@ namespace AutoScreenShot.Views
             this.PictureCount = obj.PictureCount;
         }
 
-        private bool SetProperty<T>(ref T field, T newValue, [CallerMemberName]string memberName = "")
+        private bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string memberName = "")
         {
             if (EqualityComparer<T>.Default.Equals(field, newValue)) {
                 return false;
@@ -78,7 +67,7 @@ namespace AutoScreenShot.Views
             }
         }
 
-        
+
         /// <summary>有効かどうか を取得、設定</summary>
         private bool enable_;
         [UIValue("enable")]
@@ -90,7 +79,7 @@ namespace AutoScreenShot.Views
             set => this.SetProperty(ref this.enable_, value);
         }
 
-        
+
         /// <summary>メニューで表示するかどうか を取得、設定</summary>
         private bool showInMenu_;
         [UIValue("show-in-menu")]

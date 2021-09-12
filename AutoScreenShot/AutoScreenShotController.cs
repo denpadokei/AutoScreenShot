@@ -1,15 +1,9 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using Zenject;
 
@@ -48,7 +42,13 @@ namespace AutoScreenShot
             }
             this.width = (int)PluginConfig.Instance.PictuerRenderSize.x;
             this.height = (int)PluginConfig.Instance.PictuerRenderSize.y;
+
+#if DEBUG
+            this._nextShootTime = DateTime.Now.AddSeconds(10);
+#else
             this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
+#endif
+
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -59,31 +59,62 @@ namespace AutoScreenShot
                 return;
             }
             this.SetCameraPos(this.CreateCameraPos());
-            var texture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
+            var colorTexture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
             var oldtextuer = this._ssCamera.targetTexture;
-            this._ssCamera.targetTexture = texture;
+            this._ssCamera.targetTexture = colorTexture;
             this._ssCamera.Render();
             this._ssCamera.targetTexture = oldtextuer;
-            AsyncGPUReadback.Request(texture, 0, req =>
+            AsyncGPUReadback.Request(colorTexture, 0, async req =>
             {
                 if (req.hasError) {
                     return;
                 }
-                var format = texture.graphicsFormat;
-                using (var data = req.GetData<byte>()) {
-                    var dataArray = data.ToArray();
-                    _ = Task.Run(() =>
-                    {
-                        var pngBytes = ImageConversion.EncodeArrayToJPG(dataArray, format, (uint)this.width, (uint)this.height);
-                        if (!Directory.Exists(_dataDir)) {
-                            Directory.CreateDirectory(_dataDir);
+                switch (this._saveType) {
+                    case ImageExtention.JPEG:
+                        using (var nativeData = req.GetData<byte>()) {
+                            var data = nativeData.ToArray();
+                            await Task.Run(() =>
+                            {
+                                try {
+                                    var jpgBytes = ImageConversion.EncodeArrayToJPG(data, colorTexture.graphicsFormat, (uint)colorTexture.width, (uint)colorTexture.height);
+                                    if (!Directory.Exists(_dataDir)) {
+                                        Directory.CreateDirectory(_dataDir);
+                                    }
+                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"), jpgBytes);
+                                }
+                                catch (Exception e) {
+                                    Plugin.Log.Error(e);
+                                }
+                            });
                         }
-                        File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"), pngBytes);
-                    });
+                        break;
+                    case ImageExtention.PNG:
+                        using (var colorBuffer = req.GetData<Color32>()) {
+                            var data = colorBuffer.ToArray();
+                            await Task.Run(() =>
+                            {
+                                try {
+                                    for (var i = 0; i < data.Length; i++) {
+                                        data[i].a = 255;
+                                    }
+                                    var pngBytes = ImageConversion.EncodeArrayToPNG(data, colorTexture.graphicsFormat, (uint)colorTexture.width, (uint)colorTexture.height);
+                                    if (!Directory.Exists(_dataDir)) {
+                                        Directory.CreateDirectory(_dataDir);
+                                    }
+                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.png"), pngBytes);
+                                }
+                                catch (Exception e) {
+                                    Plugin.Log.Error(e);
+                                }
+                            });
+                        }
+                        break;
+                    default:
+                        break;
                 }
+                RenderTexture.ReleaseTemporary(colorTexture);
             });
         }
-
         private void SetCameraPos(Vector3 pos)
         {
             this._ssCamera.transform.position = pos;
@@ -91,13 +122,10 @@ namespace AutoScreenShot
             this._ssCamera.transform.LookAt(this._targetGO.transform);
         }
 
-        private Vector3 CreateCameraPos()
-        {
-            return new Vector3(
+        private Vector3 CreateCameraPos() => new Vector3(
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f),
                 this._random.NextFloat(0, this._posScale * 0.5f),
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f));
-        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -114,6 +142,7 @@ namespace AutoScreenShot
         private float minFoV;
         private float maxFoV;
         private float _posScale;
+        private ImageExtention _saveType;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -137,8 +166,16 @@ namespace AutoScreenShot
             this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
             this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
             this._ssCamera.cullingMask = -1;
+            Plugin.Log.Debug($"{this._ssCamera.depthTextureMode}");
+            this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
 
             this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
+            this._saveType = PluginConfig.Instance.Extention;
+#if DEBUG
+            foreach (var item in this._ssCamera.gameObject.GetComponentsInChildren<MonoBehaviour>()) {
+                Plugin.Log.Debug($"{item}");
+            }
+#endif
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -151,13 +188,13 @@ namespace AutoScreenShot
         {
             // For this particular MonoBehaviour, we only want one instance to exist at any time, so store a reference to it in a static property
             //   and destroy any that are created while one already exists.
-            
-            Plugin.Log?.Debug($"{name}: Awake()");
+
+            Plugin.Log?.Debug($"{this.name}: Awake()");
             this._targetGO = new GameObject("Noctice");
             this._targetGO.transform.SetParent(Camera.main.transform, false);
             this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
         }
-        
+
         /// <summary>
         /// Called every frame if the script is enabled.
         /// </summary>
@@ -173,7 +210,7 @@ namespace AutoScreenShot
         /// </summary>
         private void OnDestroy()
         {
-            Plugin.Log?.Debug($"{name}: OnDestroy()");
+            Plugin.Log?.Debug($"{this.name}: OnDestroy()");
             Destroy(this._ssCamera.gameObject);
             Destroy(this._targetGO);
         }

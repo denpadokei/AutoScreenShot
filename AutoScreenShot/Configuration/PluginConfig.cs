@@ -1,8 +1,9 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using IPA.Config.Stores;
+﻿using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
 using SiraUtil.Converters;
+using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -18,6 +19,8 @@ namespace AutoScreenShot.Configuration
         public virtual float MinFoV { get; set; } = 15;
         public virtual float MaxFoV { get; set; } = 110;
         public virtual bool ShowPictureInMenu { get; set; } = true;
+        [UseConverter(typeof(EnumConverter<ImageExtention>))]
+        public virtual ImageExtention Extention { get; set; } = ImageExtention.JPEG;
         public virtual int PictureCount { get; set; } = 500;
         [UseConverter(typeof(Vector3Converter))]
         public virtual Vector3 TargetOffset { get; set; } = Vector3.zero;
@@ -36,11 +39,9 @@ namespace AutoScreenShot.Configuration
         /// <summary>
         /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
         /// </summary>
-        public virtual void Changed()
-        {
+        public virtual void Changed() =>
             // Do stuff when the config is changed.
             this.OnConfigChanged?.Invoke(this);
-        }
 
         /// <summary>
         /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.

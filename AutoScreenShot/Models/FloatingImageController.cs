@@ -1,13 +1,9 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -29,10 +25,7 @@ namespace AutoScreenShot.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public void Initialize()
-        {
-            this.gameObject.SetActive(true);
-        }
+        public void Initialize() => this.gameObject.SetActive(true);
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
@@ -43,6 +36,7 @@ namespace AutoScreenShot.Models
                 Directory.CreateDirectory(_dataDir);
             }
             var files = Directory.EnumerateFiles(_dataDir, "*.jpg", SearchOption.AllDirectories).ToList();
+            files = files.Union(Directory.EnumerateFiles(_dataDir, "*.png", SearchOption.AllDirectories)).ToList();
             while (files.Any()) {
                 var index = _random.Next(0, files.Count - 1);
                 var file = files.ElementAt(index);
@@ -70,7 +64,7 @@ namespace AutoScreenShot.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private ObjectMemoryPool<FloatingImageCanvas> memoryPool;
-        private ConcurrentBag<FloatingImageCanvas> _canvases = new ConcurrentBag<FloatingImageCanvas>();
+        private readonly ConcurrentBag<FloatingImageCanvas> _canvases = new ConcurrentBag<FloatingImageCanvas>();
         private static GameObject _lookTarget;
         private static readonly System.Random _random = new System.Random(Environment.TickCount);
         private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots");
@@ -112,10 +106,7 @@ namespace AutoScreenShot.Models
             this.CreateCanvases();
         }
 
-        private void OnDisable()
-        {
-            this.AllDeleteCanvases();
-        }
+        private void OnDisable() => this.AllDeleteCanvases();
         #endregion
     }
 }
