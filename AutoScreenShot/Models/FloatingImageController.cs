@@ -68,8 +68,8 @@ namespace AutoScreenShot.Models
         private static GameObject _lookTarget;
         private static readonly System.Random _random = new System.Random(Environment.TickCount);
         private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots");
-        private static readonly float minDistance = 5;
-        private static readonly float maxDistance = 7;
+        private float minDistance = 5;
+        private float maxDistance = 7;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -88,7 +88,7 @@ namespace AutoScreenShot.Models
                 r =>
                 {
                     UnityEngine.Random.InitState(_random.Next());
-                    var range = _random.NextFloat(minDistance, maxDistance);
+                    var range = _random.NextFloat(this.minDistance, this.maxDistance);
                     var rand = UnityEngine.Random.onUnitSphere * range;
                     if (rand.y <= 0) {
                         rand = new Vector3(rand.x, -rand.y, rand.z);
@@ -103,6 +103,8 @@ namespace AutoScreenShot.Models
             if (!PluginConfig.Instance.ShowPictureInMenu) {
                 return;
             }
+            this.minDistance = PluginConfig.Instance.MenuPictuersMinRadius;
+            this.maxDistance = PluginConfig.Instance.MenuPictuersMaxRadius;
             this.CreateCanvases();
         }
 

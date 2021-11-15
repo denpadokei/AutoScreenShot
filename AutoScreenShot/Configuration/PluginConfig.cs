@@ -18,6 +18,8 @@ namespace AutoScreenShot.Configuration
         public virtual int PositionScale { get; set; } = 10;
         public virtual float MinFoV { get; set; } = 15;
         public virtual float MaxFoV { get; set; } = 110;
+        public float MenuPictuersMinRadius { get; set; } = 5f;
+        public float MenuPictuersMaxRadius { get; set; } = 7f;
         public virtual bool ShowPictureInMenu { get; set; } = true;
         [UseConverter(typeof(EnumConverter<ImageExtention>))]
         public virtual ImageExtention Extention { get; set; } = ImageExtention.JPEG;

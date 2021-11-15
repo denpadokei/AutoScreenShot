@@ -192,10 +192,11 @@ namespace AutoScreenShot
             //   and destroy any that are created while one already exists.
 
             Plugin.Log?.Debug($"{this.name}: Awake()");
+#if DEBUG
             foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
                 Plugin.Log.Debug($"{cam.name} : {cam}");
             }
-
+#endif
             var cam1 = Resources.FindObjectsOfTypeAll<Camera>().FirstOrDefault(x => x.name == "MainCamera");
             this._targetGO = new GameObject("Noctice");
             this._targetGO.transform.SetParent(cam1.transform, false);
