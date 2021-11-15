@@ -1,7 +1,9 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
 using System;
+using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -190,9 +192,22 @@ namespace AutoScreenShot
             //   and destroy any that are created while one already exists.
 
             Plugin.Log?.Debug($"{this.name}: Awake()");
+            foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
+                Plugin.Log.Debug($"{cam.name} : {cam}");
+            }
+
+            var cam1 = Resources.FindObjectsOfTypeAll<Camera>().FirstOrDefault(x => x.name == "MainCamera");
             this._targetGO = new GameObject("Noctice");
-            this._targetGO.transform.SetParent(Camera.main.transform, false);
+            this._targetGO.transform.SetParent(cam1.transform, false);
             this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
+        }
+
+        private IEnumerator Start()
+        {
+            yield return new WaitForSeconds(3000);
+            foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
+                Plugin.Log.Debug($"{cam.name} : {cam}");
+            }
         }
 
         /// <summary>
