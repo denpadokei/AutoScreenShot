@@ -44,6 +44,7 @@ namespace AutoScreenShot
             }
             this.width = (int)PluginConfig.Instance.PictuerRenderSize.x;
             this.height = (int)PluginConfig.Instance.PictuerRenderSize.y;
+            this.antiAliasing = PluginConfig.Instance.AntiAliasing;
 
 #if DEBUG
             this._nextShootTime = DateTime.Now.AddSeconds(10);
@@ -61,7 +62,8 @@ namespace AutoScreenShot
                 return;
             }
             this.SetCameraPos(this.CreateCameraPos());
-            var colorTexture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32);
+            var aa = aaNums.Contains(PluginConfig.Instance.AntiAliasing) ? PluginConfig.Instance.AntiAliasing : 1;
+            var colorTexture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, aa);
             var oldtextuer = this._ssCamera.targetTexture;
             this._ssCamera.targetTexture = colorTexture;
             this._ssCamera.Render();
@@ -138,6 +140,7 @@ namespace AutoScreenShot
         private DateTime _nextShootTime;
         private int width;
         private int height;
+        private int antiAliasing;
         private System.Random _random;
         private int minsec;
         private int maxsec;
@@ -145,6 +148,7 @@ namespace AutoScreenShot
         private float maxFoV;
         private float _posScale;
         private ImageExtention _saveType;
+        private static readonly int[] aaNums = { 1, 2, 4, 8 };
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -202,14 +206,16 @@ namespace AutoScreenShot
             this._targetGO.transform.SetParent(cam1.transform, false);
             this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
         }
-
+#if DEBUG
         private IEnumerator Start()
         {
-            yield return new WaitForSeconds(3000);
+            yield return new WaitForSeconds(3);
             foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
                 Plugin.Log.Debug($"{cam.name} : {cam}");
             }
         }
+#endif
+
 
         /// <summary>
         /// Called every frame if the script is enabled.
