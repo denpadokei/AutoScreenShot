@@ -82,7 +82,7 @@ namespace AutoScreenShot
                                     if (!Directory.Exists(_dataDir)) {
                                         Directory.CreateDirectory(_dataDir);
                                     }
-                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_hh_mm_ss}.jpg"), jpgBytes);
+                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.jpg"), jpgBytes);
                                 }
                                 catch (Exception e) {
                                     Plugin.Log.Error(e);
