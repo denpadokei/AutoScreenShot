@@ -26,8 +26,8 @@ namespace AutoScreenShot
             Log.Info("AutoScreenShot initialized.");
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
             Log.Debug("Config loaded");
-            zenjector.OnGame<ASSGameInstaller>(false);
-            zenjector.OnMenu<ASSMenuInstaller>();
+            zenjector.Install<ASSGameInstaller>(Location.Player);
+            zenjector.Install<ASSMenuInstaller>(Location.Menu);
         }
 
         [OnStart]

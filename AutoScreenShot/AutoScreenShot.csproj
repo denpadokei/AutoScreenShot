@@ -117,6 +117,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converteres\Vector3Converter.cs" />
+    <Compile Include="Converteres\Vector2Converter.cs" />
     <Compile Include="Extention\RandomExtention.cs" />
     <Compile Include="Installers\ASSGameInstaller.cs" />
     <Compile Include="Installers\ASSMenuInstaller.cs" />
