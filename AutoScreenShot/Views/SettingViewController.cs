@@ -17,6 +17,7 @@ namespace AutoScreenShot.Views
         public void Initialize()
         {
             this.Enable = PluginConfig.Instance.Enable;
+            this.NoUI = PluginConfig.Instance.NoUI;
             this.ShowInMenu = PluginConfig.Instance.ShowPictureInMenu;
             this.MinFov = PluginConfig.Instance.MinFoV;
             this.MaxFov = PluginConfig.Instance.MaxFoV;
@@ -30,6 +31,7 @@ namespace AutoScreenShot.Views
         private void OnConfigChanged(PluginConfig obj)
         {
             this.Enable = obj.Enable;
+            this.NoUI = obj.NoUI;
             this.ShowInMenu = obj.ShowPictureInMenu;
             this.MinFov = obj.MinFoV;
             this.MaxFov = obj.MaxFoV;
@@ -52,6 +54,9 @@ namespace AutoScreenShot.Views
             this.NotifyPropertyChanged(e);
             if (e == nameof(this.Enable)) {
                 PluginConfig.Instance.Enable = this.Enable;
+            }
+            else if (e == nameof(this.NoUI)) {
+                PluginConfig.Instance.NoUI = this.NoUI;
             }
             else if (e == nameof(this.ShowInMenu)) {
                 PluginConfig.Instance.ShowPictureInMenu = this.ShowInMenu;
@@ -77,6 +82,18 @@ namespace AutoScreenShot.Views
             get => this.enable_;
 
             set => this.SetProperty(ref this.enable_, value);
+        }
+
+
+        /// <summary>UIを非表示にするか を取得、設定</summary>
+        private bool noUI_;
+        [UIValue("no-ui")]
+        /// <summary>UIを非表示にするか を取得、設定</summary>
+        public bool NoUI
+        {
+            get => this.noUI_;
+
+            set => this.SetProperty(ref this.noUI_, value);
         }
 
 

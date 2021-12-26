@@ -149,6 +149,7 @@ namespace AutoScreenShot
         private float _posScale;
         private ImageExtention _saveType;
         private static readonly int[] aaNums = { 1, 2, 4, 8 };
+        private const int UI_LAYER = 5;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -172,6 +173,9 @@ namespace AutoScreenShot
             this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
             this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
             this._ssCamera.cullingMask = -1;
+            if (PluginConfig.Instance.NoUI) {
+                this._ssCamera.cullingMask &= ~(1 << UI_LAYER);
+            }
             Plugin.Log.Debug($"{this._ssCamera.depthTextureMode}");
             this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
 
