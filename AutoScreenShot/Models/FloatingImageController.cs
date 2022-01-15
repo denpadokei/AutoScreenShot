@@ -89,10 +89,13 @@ namespace AutoScreenShot.Models
                 {
                     UnityEngine.Random.InitState(_random.Next());
                     var range = _random.NextFloat(this.minDistance, this.maxDistance);
-                    var rand = UnityEngine.Random.onUnitSphere * range;
-                    if (rand.y <= 0) {
-                        rand = new Vector3(rand.x, -rand.y, rand.z);
-                    }
+                    Vector3 rand;
+                    do {
+                        rand = UnityEngine.Random.onUnitSphere * range;
+                        if (rand.y <= 0) {
+                            rand = new Vector3(rand.x, -rand.y, rand.z);
+                        }
+                    } while (!PluginConfig.Instance.MenuPictureOverlap && rand.z > 0 && rand.y < (0.6 * range));
                     r.gameObject.transform.position = rand;
                     r.transform.LookAt(_lookTarget.transform);
                 },

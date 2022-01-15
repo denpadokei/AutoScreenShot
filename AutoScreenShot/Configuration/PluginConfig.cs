@@ -22,6 +22,7 @@ namespace AutoScreenShot.Configuration
         public float MenuPictuersMinRadius { get; set; } = 5f;
         public float MenuPictuersMaxRadius { get; set; } = 7f;
         public virtual bool ShowPictureInMenu { get; set; } = true;
+        public virtual bool MenuPictureOverlap { get; set; } = true;
         [UseConverter(typeof(EnumConverter<ImageExtention>))]
         public virtual ImageExtention Extention { get; set; } = ImageExtention.JPEG;
         public virtual int PictureCount { get; set; } = 500;

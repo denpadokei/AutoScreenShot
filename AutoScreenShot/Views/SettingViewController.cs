@@ -19,6 +19,7 @@ namespace AutoScreenShot.Views
             this.Enable = PluginConfig.Instance.Enable;
             this.NoUI = PluginConfig.Instance.NoUI;
             this.ShowInMenu = PluginConfig.Instance.ShowPictureInMenu;
+            this.MenuOverlap = PluginConfig.Instance.MenuPictureOverlap;
             this.MinFov = PluginConfig.Instance.MinFoV;
             this.MaxFov = PluginConfig.Instance.MaxFoV;
             this.PictureCount = PluginConfig.Instance.PictureCount;
@@ -33,6 +34,7 @@ namespace AutoScreenShot.Views
             this.Enable = obj.Enable;
             this.NoUI = obj.NoUI;
             this.ShowInMenu = obj.ShowPictureInMenu;
+            this.MenuOverlap = obj.MenuPictureOverlap;
             this.MinFov = obj.MinFoV;
             this.MaxFov = obj.MaxFoV;
             this.PictureCount = obj.PictureCount;
@@ -60,6 +62,9 @@ namespace AutoScreenShot.Views
             }
             else if (e == nameof(this.ShowInMenu)) {
                 PluginConfig.Instance.ShowPictureInMenu = this.ShowInMenu;
+            }
+            else if (e == nameof(this.MenuOverlap)) {
+                PluginConfig.Instance.MenuPictureOverlap = this.MenuOverlap;
             }
             else if (e == nameof(this.MinFov)) {
                 PluginConfig.Instance.MinFoV = this.MinFov;
@@ -106,6 +111,16 @@ namespace AutoScreenShot.Views
             get => this.showInMenu_;
 
             set => this.SetProperty(ref this.showInMenu_, value);
+        }
+
+        /// <summary>メニューに重ねて表示するかどうか を取得、設定</summary>
+        private bool menuOverlap_;
+        [UIValue("menu-overlap")]
+        /// <summary>メニューに重ねて表示するかどうか を取得、設定</summary>
+        public bool MenuOverlap {
+            get => this.menuOverlap_;
+
+            set => this.SetProperty(ref this.menuOverlap_, value);
         }
 
         /// <summary>最小値のFOV を取得、設定</summary>
