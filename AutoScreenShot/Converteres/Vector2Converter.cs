@@ -1,7 +1,7 @@
-﻿using System;
-using UnityEngine;
-using IPA.Config.Data;
+﻿using IPA.Config.Data;
 using IPA.Config.Stores;
+using System;
+using UnityEngine;
 
 namespace AutoScreenShot.Converteres
 {
@@ -19,9 +19,9 @@ namespace AutoScreenShot.Converteres
         public override Vector2 FromValue(Value value, object parent)
         {
             if (value is Map m) {
-                m.TryGetValue("x", out Value x);
-                m.TryGetValue("y", out Value y);
-                Vector2 vec = Vector2.zero;
+                m.TryGetValue("x", out var x);
+                m.TryGetValue("y", out var y);
+                var vec = Vector2.zero;
                 if (x is FloatingPoint pointX) {
                     vec.x = (float)pointX.Value;
                 }

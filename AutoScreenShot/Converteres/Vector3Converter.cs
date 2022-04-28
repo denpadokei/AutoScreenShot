@@ -1,7 +1,7 @@
-﻿using System;
-using UnityEngine;
-using IPA.Config.Data;
+﻿using IPA.Config.Data;
 using IPA.Config.Stores;
+using System;
+using UnityEngine;
 
 namespace AutoScreenShot.Converteres
 {
@@ -19,10 +19,10 @@ namespace AutoScreenShot.Converteres
         public override Vector3 FromValue(Value value, object parent)
         {
             if (value is Map m) {
-                m.TryGetValue("x", out Value x);
-                m.TryGetValue("y", out Value y);
-                m.TryGetValue("z", out Value z);
-                Vector3 vec = Vector3.zero;
+                m.TryGetValue("x", out var x);
+                m.TryGetValue("y", out var y);
+                m.TryGetValue("z", out var z);
+                var vec = Vector3.zero;
                 if (x is FloatingPoint pointX) {
                     vec.x = (float)pointX.Value;
                 }

@@ -1,9 +1,11 @@
 ﻿using HMUI;
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 
 namespace AutoScreenShot.Models
 {
@@ -24,7 +26,7 @@ namespace AutoScreenShot.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public async void Init(string filePath)
+        public async Task Init(string filePath)
         {
             this._imageFilePath = filePath;
             if (string.IsNullOrEmpty(filePath)) {
@@ -33,21 +35,27 @@ namespace AutoScreenShot.Models
             if (!File.Exists(this._imageFilePath)) {
                 return;
             }
-            if (!_chashedTexture.TryGetValue(filePath, out this._texture)) {
-                byte[] datas = null;
-                await Task.Run(() =>
+            if (!s_chashedTexture.TryGetValue(filePath, out this._texture)) {
+                byte[] datas;
+                datas = await Task.Run(() =>
                 {
-                    datas = File.ReadAllBytes(this._imageFilePath);
+                    try {
+                        return File.ReadAllBytes(this._imageFilePath);
+                    }
+                    catch (Exception e) {
+                        Plugin.Log.Error(e);
+                        return null;
+                    }
                 }).ConfigureAwait(true);
-                var extention = Path.GetExtension(filePath);
-                var extentionType = string.Equals(extention, ".jpg") ? ImageExtention.JPEG : ImageExtention.PNG;
-
-                var textuer = this.CreateTextuer2D(datas, extentionType);
-                _chashedTexture.TryAdd(filePath, textuer);
-                this._texture = textuer;
-                if (datas == null) {
+                if (datas == null || datas.Length == 0) {
                     return;
                 }
+                var extention = Path.GetExtension(filePath);
+                var extentionType = string.Equals(extention, ".jpg", StringComparison.InvariantCultureIgnoreCase) ? ImageExtention.JPEG : ImageExtention.PNG;
+
+                var textuer = this.CreateTextuer2D(datas, extentionType);
+                s_chashedTexture.TryAdd(filePath, textuer);
+                this._texture = textuer;
             }
             (this._rootCanvas.transform as RectTransform).sizeDelta = new Vector2(this._texture.width * 2, this._texture.height * 2);
             this._rootCanvas.transform.localScale = Vector3.one * 0.001f;
@@ -62,15 +70,27 @@ namespace AutoScreenShot.Models
             this.Image.rectTransform.sizeDelta = new Vector2(this._texture.width, this._texture.height);
             this.Image.material.mainTexture = this._texture;
         }
+
+        public static void ClearChache()
+        {
+            var files = Directory.EnumerateFiles(s_dataDir, "*.jpg", SearchOption.AllDirectories).ToList();
+            files = files.Union(Directory.EnumerateFiles(s_dataDir, "*.png", SearchOption.AllDirectories)).ToList();
+            foreach (var filePath in files) {
+                if (s_chashedTexture.TryRemove(filePath, out var texture2D)) {
+                    Destroy(texture2D);
+                }
+            }
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
-        private void Move() => this._rootCanvas.transform.position = new Vector3
-                (
+        private void Move()
+        {
+            this._rootCanvas.transform.position = new Vector3(
                 this._rootCanvas.transform.position.x,
                 this._rootCanvas.transform.position.y + Mathf.Sin(Time.time * 0.5f) / 1000,
-                this._rootCanvas.transform.position.z
-                );
+                this._rootCanvas.transform.position.z);
+        }
 
         private Texture2D CreateTextuer2D(byte[] datas, ImageExtention extention)
         {
@@ -113,27 +133,48 @@ namespace AutoScreenShot.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
-        #endregion
-        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
-        #region // 構築・破棄
         private string _imageFilePath;
         private Canvas _rootCanvas;
         private Material _noGlow;
-        private static readonly ConcurrentDictionary<string, Texture2D> _chashedTexture = new ConcurrentDictionary<string, Texture2D>();
+        private static readonly ConcurrentDictionary<string, Texture2D> s_chashedTexture = new ConcurrentDictionary<string, Texture2D>();
         private Texture2D _texture;
+        private static readonly string s_dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots");
+        #endregion
+        //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
+        #region // 構築・破棄
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // Unity methods
-        public void Update() => this.Move();
+        public void Update()
+        {
+            this.Move();
+        }
+
         public void Awake()
         {
             if (this._noGlow == null) {
                 this._noGlow = Instantiate(Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(x => x.name == "UINoGlow"));
             }
-            this._rootCanvas = this.gameObject.AddComponent<Canvas>();
-            this.gameObject.AddComponent<CurvedCanvasSettings>();
+            this._rootCanvas = this.GetComponentInChildren<Canvas>(true);
             this._rootCanvas.renderMode = RenderMode.WorldSpace;
         }
+
+        public void OnDestroy()
+        {
+            if (this._noGlow != null) {
+                Destroy(this._noGlow);
+            }
+        }
         #endregion
+        public class Pool : MonoMemoryPool<FloatingImageCanvas>
+        {
+            protected override void OnDespawned(FloatingImageCanvas item)
+            {
+                if (item == null) {
+                    return;
+                }
+                base.OnDespawned(item);
+            }
+        }
     }
 }

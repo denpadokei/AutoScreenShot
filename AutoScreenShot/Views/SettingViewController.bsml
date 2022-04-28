@@ -1,5 +1,6 @@
 ﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
   <settings-container>
+    <button text='Clear screen shot chache' on-click='clear' />
     <toggle-setting text='Enable' value='enable'></toggle-setting>
     <toggle-setting text='No UI' value='no-ui'></toggle-setting>
     <toggle-setting text='Show in menu' value='show-in-menu'></toggle-setting>

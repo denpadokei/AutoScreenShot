@@ -19,13 +19,13 @@ namespace AutoScreenShot.Configuration
         public virtual int PositionScale { get; set; } = 10;
         public virtual float MinFoV { get; set; } = 15;
         public virtual float MaxFoV { get; set; } = 110;
-        public float MenuPictuersMinRadius { get; set; } = 5f;
-        public float MenuPictuersMaxRadius { get; set; } = 7f;
+        public float MenuPictuersMinRadius { get; set; } = 6.5f;
+        public float MenuPictuersMaxRadius { get; set; } = 8f;
         public virtual bool ShowPictureInMenu { get; set; } = true;
         public virtual bool MenuPictureOverlap { get; set; } = true;
         [UseConverter(typeof(EnumConverter<ImageExtention>))]
         public virtual ImageExtention Extention { get; set; } = ImageExtention.JPEG;
-        public virtual int PictureCount { get; set; } = 500;
+        public virtual int PictureCount { get; set; } = 100;
         [UseConverter(typeof(Vector3Converter))]
         public virtual Vector3 TargetOffset { get; set; } = Vector3.zero;
         [UseConverter(typeof(Vector2Converter))]
@@ -44,9 +44,11 @@ namespace AutoScreenShot.Configuration
         /// <summary>
         /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
         /// </summary>
-        public virtual void Changed() =>
+        public virtual void Changed()
+        {
             // Do stuff when the config is changed.
             this.OnConfigChanged?.Invoke(this);
+        }
 
         /// <summary>
         /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.

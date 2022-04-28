@@ -1,5 +1,4 @@
-﻿using SiraUtil;
-using Zenject;
+﻿using Zenject;
 
 namespace AutoScreenShot.Installers
 {

@@ -1,6 +1,7 @@
 ﻿using AutoScreenShot.Models;
 using AutoScreenShot.Views;
-using SiraUtil;
+using HMUI;
+using UnityEngine;
 using Zenject;
 
 namespace AutoScreenShot.Installers
@@ -11,6 +12,9 @@ namespace AutoScreenShot.Installers
         {
             this.Container.BindInterfacesAndSelfTo<FloatingImageController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<SettingViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
+            this.Container.BindMemoryPool<FloatingImageCanvas, FloatingImageCanvas.Pool>().WithInitialSize(500).FromComponentInNewPrefab(this._screen).AsCached();
         }
+
+        private readonly GameObject _screen = new GameObject(nameof(FloatingImageCanvas), typeof(RectTransform), typeof(Canvas), typeof(CurvedCanvasSettings), typeof(FloatingImageCanvas));
     }
 }

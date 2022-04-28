@@ -1,7 +1,6 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
 using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,17 +38,17 @@ namespace AutoScreenShot
                 return;
             }
             this._isSupprot = true;
-            if (!Directory.Exists(_dataDir)) {
-                Directory.CreateDirectory(_dataDir);
+            if (!Directory.Exists(s_dataDir)) {
+                Directory.CreateDirectory(s_dataDir);
             }
-            this.width = (int)PluginConfig.Instance.PictuerRenderSize.x;
-            this.height = (int)PluginConfig.Instance.PictuerRenderSize.y;
-            this.antiAliasing = PluginConfig.Instance.AntiAliasing;
+            this._width = (int)PluginConfig.Instance.PictuerRenderSize.x;
+            this._height = (int)PluginConfig.Instance.PictuerRenderSize.y;
+            this._antiAliasing = PluginConfig.Instance.AntiAliasing;
 
 #if DEBUG
             this._nextShootTime = DateTime.Now.AddSeconds(10);
 #else
-            this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
+            this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this._minsec, this._maxsec));
 #endif
 
         }
@@ -62,8 +61,8 @@ namespace AutoScreenShot
                 return;
             }
             this.SetCameraPos(this.CreateCameraPos());
-            var aa = aaNums.Contains(PluginConfig.Instance.AntiAliasing) ? PluginConfig.Instance.AntiAliasing : 1;
-            var colorTexture = RenderTexture.GetTemporary(this.width, this.height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, aa);
+            var aa = s_aaNums.Contains(this._antiAliasing) ? this._antiAliasing : 1;
+            var colorTexture = RenderTexture.GetTemporary(this._width, this._height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, aa);
             var oldtextuer = this._ssCamera.targetTexture;
             this._ssCamera.targetTexture = colorTexture;
             this._ssCamera.Render();
@@ -81,10 +80,10 @@ namespace AutoScreenShot
                             {
                                 try {
                                     var jpgBytes = ImageConversion.EncodeArrayToJPG(data, colorTexture.graphicsFormat, (uint)colorTexture.width, (uint)colorTexture.height);
-                                    if (!Directory.Exists(_dataDir)) {
-                                        Directory.CreateDirectory(_dataDir);
+                                    if (!Directory.Exists(s_dataDir)) {
+                                        Directory.CreateDirectory(s_dataDir);
                                     }
-                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.jpg"), jpgBytes);
+                                    File.WriteAllBytes(Path.Combine(s_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.jpg"), jpgBytes);
                                 }
                                 catch (Exception e) {
                                     Plugin.Log.Error(e);
@@ -102,10 +101,10 @@ namespace AutoScreenShot
                                         data[i].a = 255;
                                     }
                                     var pngBytes = ImageConversion.EncodeArrayToPNG(data, colorTexture.graphicsFormat, (uint)colorTexture.width, (uint)colorTexture.height);
-                                    if (!Directory.Exists(_dataDir)) {
-                                        Directory.CreateDirectory(_dataDir);
+                                    if (!Directory.Exists(s_dataDir)) {
+                                        Directory.CreateDirectory(s_dataDir);
                                     }
-                                    File.WriteAllBytes(Path.Combine(_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.png"), pngBytes);
+                                    File.WriteAllBytes(Path.Combine(s_dataDir, $"BeatSaber_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.png"), pngBytes);
                                 }
                                 catch (Exception e) {
                                     Plugin.Log.Error(e);
@@ -122,34 +121,37 @@ namespace AutoScreenShot
         private void SetCameraPos(Vector3 pos)
         {
             this._ssCamera.transform.position = pos;
-            this._ssCamera.fieldOfView = this._random.NextFloat(this.minFoV, this.maxFoV);
+            this._ssCamera.fieldOfView = this._random.NextFloat(this._minFoV, this._maxFoV);
             this._ssCamera.transform.LookAt(this._targetGO.transform);
         }
 
-        private Vector3 CreateCameraPos() => new Vector3(
+        private Vector3 CreateCameraPos()
+        {
+            return new Vector3(
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f),
                 this._random.NextFloat(0, this._posScale * 0.5f),
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f));
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private Camera _ssCamera;
         private GameObject _targetGO;
         private bool _isSupprot;
-        private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
+        private static readonly string s_dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
         private DateTime _nextShootTime;
-        private int width;
-        private int height;
-        private int antiAliasing;
+        private int _width;
+        private int _height;
+        private int _antiAliasing = 1;
         private System.Random _random;
-        private int minsec;
-        private int maxsec;
-        private float minFoV;
-        private float maxFoV;
+        private int _minsec;
+        private int _maxsec;
+        private float _minFoV;
+        private float _maxFoV;
         private float _posScale;
         private ImageExtention _saveType;
-        private static readonly int[] aaNums = { 1, 2, 4, 8 };
-        private const int UI_LAYER = 5;
+        private static readonly int[] s_aaNums = { 1, 2, 4, 8 };
+        private const int s_ui_Layer = 5;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -158,11 +160,11 @@ namespace AutoScreenShot
         {
             this._random = new System.Random(Environment.TickCount);
 
-            this.minsec = controller.songEndTime < PluginConfig.Instance.MinSec ? (int)(controller.songEndTime / 2) : PluginConfig.Instance.MinSec;
-            this.maxsec = controller.songEndTime < PluginConfig.Instance.MaxSec || PluginConfig.Instance.MinSec < this.minsec ? (int)controller.songEndTime : PluginConfig.Instance.MaxSec;
+            this._minsec = controller.songEndTime < PluginConfig.Instance.MinSec ? (int)(controller.songEndTime / 2) : PluginConfig.Instance.MinSec;
+            this._maxsec = controller.songEndTime < PluginConfig.Instance.MaxSec || PluginConfig.Instance.MinSec < this._minsec ? (int)controller.songEndTime : PluginConfig.Instance.MaxSec;
 
-            this.minFoV = PluginConfig.Instance.MinFoV;
-            this.maxFoV = PluginConfig.Instance.MinFoV < this.minFoV ? this.minFoV : PluginConfig.Instance.MaxFoV;
+            this._minFoV = PluginConfig.Instance.MinFoV;
+            this._maxFoV = PluginConfig.Instance.MinFoV < this._minFoV ? this._minFoV : PluginConfig.Instance.MaxFoV;
 
             this._posScale = PluginConfig.Instance.PositionScale;
 
@@ -174,7 +176,7 @@ namespace AutoScreenShot
             this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
             this._ssCamera.cullingMask = -1;
             if (PluginConfig.Instance.NoUI) {
-                this._ssCamera.cullingMask &= ~(1 << UI_LAYER);
+                this._ssCamera.cullingMask &= ~(1 << s_ui_Layer);
             }
             Plugin.Log.Debug($"{this._ssCamera.depthTextureMode}");
             this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
@@ -228,7 +230,7 @@ namespace AutoScreenShot
         {
             if (PluginConfig.Instance.Enable && this._nextShootTime < DateTime.Now) {
                 this.Shoot();
-                this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this.minsec, this.maxsec));
+                this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this._minsec, this._maxsec));
             }
         }
         /// <summary>

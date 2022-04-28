@@ -124,7 +124,6 @@
     <Compile Include="Installers\ASSMenuInstaller.cs" />
     <Compile Include="Models\FloatingImageCanvas.cs" />
     <Compile Include="Models\FloatingImageController.cs" />
-    <Compile Include="Models\ObjectMemoryPool.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="AutoScreenShotController.cs" />
