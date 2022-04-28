@@ -1,4 +1,5 @@
 ﻿using AutoScreenShot.Configuration;
+using AutoScreenShot.Models;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -25,9 +26,15 @@ namespace AutoScreenShot.Views
             this.PictureCount = PluginConfig.Instance.PictureCount;
             BSMLSettings.instance.AddSettingsMenu("AutoScreenShot", this.ResourceName, this);
         }
-        private void OnDisable() => PluginConfig.Instance.OnConfigChanged -= this.OnConfigChanged;
+        private void OnDisable()
+        {
+            PluginConfig.Instance.OnConfigChanged -= this.OnConfigChanged;
+        }
 
-        private void OnEnable() => PluginConfig.Instance.OnConfigChanged += this.OnConfigChanged;
+        private void OnEnable()
+        {
+            PluginConfig.Instance.OnConfigChanged += this.OnConfigChanged;
+        }
 
         private void OnConfigChanged(PluginConfig obj)
         {
@@ -77,6 +84,11 @@ namespace AutoScreenShot.Views
             }
         }
 
+        [UIAction("clear")]
+        public void ClearChache()
+        {
+            FloatingImageCanvas.ClearChache();
+        }
 
         /// <summary>有効かどうか を取得、設定</summary>
         private bool enable_;
@@ -117,7 +129,8 @@ namespace AutoScreenShot.Views
         private bool menuOverlap_;
         [UIValue("menu-overlap")]
         /// <summary>メニューに重ねて表示するかどうか を取得、設定</summary>
-        public bool MenuOverlap {
+        public bool MenuOverlap
+        {
             get => this.menuOverlap_;
 
             set => this.SetProperty(ref this.menuOverlap_, value);

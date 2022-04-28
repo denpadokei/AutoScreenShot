@@ -1,7 +1,6 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
 using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -126,10 +125,13 @@ namespace AutoScreenShot
             this._ssCamera.transform.LookAt(this._targetGO.transform);
         }
 
-        private Vector3 CreateCameraPos() => new Vector3(
+        private Vector3 CreateCameraPos()
+        {
+            return new Vector3(
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f),
                 this._random.NextFloat(0, this._posScale * 0.5f),
                 this._random.NextFloat(-this._posScale * 0.5f, this._posScale * 0.5f));
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
