@@ -168,6 +168,13 @@ namespace AutoScreenShot.Models
         #endregion
         public class Pool : MonoMemoryPool<FloatingImageCanvas>
         {
+            protected override void OnDespawned(FloatingImageCanvas item)
+            {
+                if (item == null) {
+                    return;
+                }
+                base.OnDespawned(item);
+            }
         }
     }
 }
