@@ -35,13 +35,13 @@ namespace AutoScreenShot.Models
         private async Task CreateCanvases()
         {
             Plugin.Log.Debug("Create canvases call.");
-            if (!Directory.Exists(_dataDir)) {
-                Directory.CreateDirectory(_dataDir);
+            if (!Directory.Exists(s_dataDir)) {
+                Directory.CreateDirectory(s_dataDir);
             }
-            var files = Directory.EnumerateFiles(_dataDir, "*.jpg", SearchOption.AllDirectories).ToList();
-            files = files.Union(Directory.EnumerateFiles(_dataDir, "*.png", SearchOption.AllDirectories)).ToList();
+            var files = Directory.EnumerateFiles(s_dataDir, "*.jpg", SearchOption.AllDirectories).ToList();
+            files = files.Union(Directory.EnumerateFiles(s_dataDir, "*.png", SearchOption.AllDirectories)).ToList();
             while (files.Any()) {
-                var index = _random.Next(0, files.Count - 1);
+                var index = s_random.Next(0, files.Count - 1);
                 var file = files.ElementAt(index);
                 var canvas = this._memoryPoolContainer.Spawn();
 
@@ -50,7 +50,7 @@ namespace AutoScreenShot.Models
                     continue;
                 }
                 canvas.transform.position = this.CreateCanvasPosition();
-                canvas.transform.LookAt(_lookTarget.transform);
+                canvas.transform.LookAt(s_lookTarget.transform);
                 await canvas.Init(file);
                 if ((uint)PluginConfig.Instance.PictureCount < this._memoryPoolContainer.activeItems.Count) {
                     break;
@@ -68,8 +68,8 @@ namespace AutoScreenShot.Models
 
         private Vector3 CreateCanvasPosition()
         {
-            UnityEngine.Random.InitState(_random.Next());
-            var range = _random.NextFloat(this.minDistance, this.maxDistance);
+            UnityEngine.Random.InitState(s_random.Next());
+            var range = s_random.NextFloat(this._minDistance, this._maxDistance);
             Vector3 rand;
             do {
                 rand = UnityEngine.Random.onUnitSphere * range;
@@ -83,11 +83,11 @@ namespace AutoScreenShot.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private MemoryPoolContainer<FloatingImageCanvas> _memoryPoolContainer;
-        private static GameObject _lookTarget;
-        private static readonly System.Random _random = new System.Random(Environment.TickCount);
-        private static readonly string _dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots");
-        private float minDistance = 5;
-        private float maxDistance = 7;
+        private static GameObject s_lookTarget;
+        private static readonly System.Random s_random = new System.Random(Environment.TickCount);
+        private static readonly string s_dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots");
+        private float _minDistance = 5;
+        private float _maxDistance = 7;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -101,10 +101,10 @@ namespace AutoScreenShot.Models
         #region // Unity methods
         private void Awake()
         {
-            if (_lookTarget == null) {
-                _lookTarget = new GameObject();
-                _lookTarget.transform.SetParent(this.transform);
-                _lookTarget.transform.localPosition = new Vector3(0f, 1.65f, 0);
+            if (s_lookTarget == null) {
+                s_lookTarget = new GameObject();
+                s_lookTarget.transform.SetParent(this.transform);
+                s_lookTarget.transform.localPosition = new Vector3(0f, 1.65f, 0);
             }
         }
         private async void OnEnable()
@@ -112,8 +112,8 @@ namespace AutoScreenShot.Models
             if (!PluginConfig.Instance.ShowPictureInMenu) {
                 return;
             }
-            this.minDistance = PluginConfig.Instance.MenuPictuersMinRadius;
-            this.maxDistance = PluginConfig.Instance.MenuPictuersMaxRadius;
+            this._minDistance = PluginConfig.Instance.MenuPictuersMinRadius;
+            this._maxDistance = PluginConfig.Instance.MenuPictuersMaxRadius;
             await this.CreateCanvases();
         }
 

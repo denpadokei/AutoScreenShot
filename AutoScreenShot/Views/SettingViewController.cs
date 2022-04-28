@@ -91,82 +91,82 @@ namespace AutoScreenShot.Views
         }
 
         /// <summary>有効かどうか を取得、設定</summary>
-        private bool enable_;
+        private bool _enable;
         [UIValue("enable")]
         /// <summary>有効かどうか を取得、設定</summary>
         public bool Enable
         {
-            get => this.enable_;
+            get => this._enable;
 
-            set => this.SetProperty(ref this.enable_, value);
+            set => this.SetProperty(ref this._enable, value);
         }
 
 
         /// <summary>UIを非表示にするか を取得、設定</summary>
-        private bool noUI_;
+        private bool _noUI;
         [UIValue("no-ui")]
         /// <summary>UIを非表示にするか を取得、設定</summary>
         public bool NoUI
         {
-            get => this.noUI_;
+            get => this._noUI;
 
-            set => this.SetProperty(ref this.noUI_, value);
+            set => this.SetProperty(ref this._noUI, value);
         }
 
 
         /// <summary>メニューで表示するかどうか を取得、設定</summary>
-        private bool showInMenu_;
+        private bool _showInMenu;
         [UIValue("show-in-menu")]
         /// <summary>メニューで表示するかどうか を取得、設定</summary>
         public bool ShowInMenu
         {
-            get => this.showInMenu_;
+            get => this._showInMenu;
 
-            set => this.SetProperty(ref this.showInMenu_, value);
+            set => this.SetProperty(ref this._showInMenu, value);
         }
 
         /// <summary>メニューに重ねて表示するかどうか を取得、設定</summary>
-        private bool menuOverlap_;
+        private bool _menuOverlap;
         [UIValue("menu-overlap")]
         /// <summary>メニューに重ねて表示するかどうか を取得、設定</summary>
         public bool MenuOverlap
         {
-            get => this.menuOverlap_;
+            get => this._menuOverlap;
 
-            set => this.SetProperty(ref this.menuOverlap_, value);
+            set => this.SetProperty(ref this._menuOverlap, value);
         }
 
         /// <summary>最小値のFOV を取得、設定</summary>
-        private float minFov_;
+        private float _minFov;
         [UIValue("min-fov")]
         /// <summary>最小値のFOV を取得、設定</summary>
         public float MinFov
         {
-            get => this.minFov_;
+            get => this._minFov;
 
-            set => this.SetProperty(ref this.minFov_, value);
+            set => this.SetProperty(ref this._minFov, value);
         }
 
         /// <summary>最大のFOV を取得、設定</summary>
-        private float maxFov_;
+        private float _maxFov;
         [UIValue("max-fov")]
         /// <summary>最大のFOV を取得、設定</summary>
         public float MaxFov
         {
-            get => this.maxFov_;
+            get => this._maxFov;
 
-            set => this.SetProperty(ref this.maxFov_, value);
+            set => this.SetProperty(ref this._maxFov, value);
         }
 
         /// <summary>写真の数 を取得、設定</summary>
-        private int pictureCount_;
+        private int _pictureCount;
         [UIValue("pictuer-count")]
         /// <summary>写真の数 を取得、設定</summary>
         public int PictureCount
         {
-            get => this.pictureCount_;
+            get => this._pictureCount;
 
-            set => this.SetProperty(ref this.pictureCount_, value);
+            set => this.SetProperty(ref this._pictureCount, value);
         }
     }
 }
