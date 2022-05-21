@@ -1,8 +1,10 @@
 ﻿using AutoScreenShot.Configuration;
 using AutoScreenShot.Extention;
+using SiraUtil.Zenject;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -14,7 +16,7 @@ namespace AutoScreenShot
     /// Monobehaviours (scripts) are added to GameObjects.
     /// For a full list of Messages a Monobehaviour can receive from the game, see https://docs.unity3d.com/ScriptReference/MonoBehaviour.html.
     /// </summary>
-    public class AutoScreenShotController : MonoBehaviour, IInitializable
+    public class AutoScreenShotController : MonoBehaviour, IAsyncInitializable
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
@@ -30,8 +32,41 @@ namespace AutoScreenShot
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
-        public void Initialize()
+        public async Task InitializeAsync(CancellationToken token)
         {
+            this._minFoV = PluginConfig.Instance.MinFoV;
+            this._maxFoV = PluginConfig.Instance.MinFoV < this._minFoV ? this._minFoV : PluginConfig.Instance.MaxFoV;
+
+            this._posScale = PluginConfig.Instance.PositionScale;
+            while (Camera.main == null || Camera.main.gameObject == null) {
+                await Task.Yield();
+            }
+            this._ssCamera = Instantiate(Camera.main.gameObject).GetComponent<Camera>();
+            this._ssCamera.gameObject.name = "Prompt";
+            this._ssCamera.gameObject.tag = "Untagged";
+            this._ssCamera.name = "Prompt Camera";
+            this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
+            this._ssCamera.cullingMask = -1;
+#if DEBUG
+            foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
+                Plugin.Log.Debug($"{cam.name} : {cam}");
+            }
+#endif
+            this._targetGO.transform.SetParent(Camera.main.transform, false);
+            this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
+            if (PluginConfig.Instance.NoUI) {
+                this._ssCamera.cullingMask &= ~(1 << s_ui_Layer);
+            }
+            this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
+            this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
+            this._saveType = PluginConfig.Instance.Extention;
+#if DEBUG
+            foreach (var item in this._ssCamera.gameObject.GetComponentsInChildren<MonoBehaviour>()) {
+                Plugin.Log.Debug($"{item}");
+            }
+#endif
+
             if (!SystemInfo.supportsAsyncGPUReadback) {
                 this._isSupprot = false;
                 Plugin.Log.Debug("Not supproted.");
@@ -50,7 +85,6 @@ namespace AutoScreenShot
 #else
             this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this._minsec, this._maxsec));
 #endif
-
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -136,7 +170,7 @@ namespace AutoScreenShot
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private Camera _ssCamera;
-        private GameObject _targetGO;
+        private readonly GameObject _targetGO = new GameObject("Noctice");
         private bool _isSupprot;
         private static readonly string s_dataDir = Path.Combine(Environment.CurrentDirectory, "UserData", "ScreenShoots", $"{DateTime.Now:yyyy_MM_dd}");
         private DateTime _nextShootTime;
@@ -159,35 +193,8 @@ namespace AutoScreenShot
         private void Constractor(IAudioTimeSource controller)
         {
             this._random = new System.Random(Environment.TickCount);
-
             this._minsec = controller.songEndTime < PluginConfig.Instance.MinSec ? (int)(controller.songEndTime / 2) : PluginConfig.Instance.MinSec;
             this._maxsec = controller.songEndTime < PluginConfig.Instance.MaxSec || PluginConfig.Instance.MinSec < this._minsec ? (int)controller.songEndTime : PluginConfig.Instance.MaxSec;
-
-            this._minFoV = PluginConfig.Instance.MinFoV;
-            this._maxFoV = PluginConfig.Instance.MinFoV < this._minFoV ? this._minFoV : PluginConfig.Instance.MaxFoV;
-
-            this._posScale = PluginConfig.Instance.PositionScale;
-
-            this._ssCamera = Instantiate(Camera.main.gameObject).GetComponent<Camera>();
-            this._ssCamera.gameObject.name = "Prompt";
-            this._ssCamera.gameObject.tag = "Untagged";
-            this._ssCamera.name = "Prompt Camera";
-            this._ssCamera.stereoTargetEye = StereoTargetEyeMask.None;
-            this._ssCamera.gameObject.transform.position = new Vector3(0f, 1.7f, -3.2f);
-            this._ssCamera.cullingMask = -1;
-            if (PluginConfig.Instance.NoUI) {
-                this._ssCamera.cullingMask &= ~(1 << s_ui_Layer);
-            }
-            Plugin.Log.Debug($"{this._ssCamera.depthTextureMode}");
-            this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
-
-            this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
-            this._saveType = PluginConfig.Instance.Extention;
-#if DEBUG
-            foreach (var item in this._ssCamera.gameObject.GetComponentsInChildren<MonoBehaviour>()) {
-                Plugin.Log.Debug($"{item}");
-            }
-#endif
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -196,22 +203,6 @@ namespace AutoScreenShot
         /// <summary>
         /// Only ever called once, mainly used to initialize variables.
         /// </summary>
-        private void Awake()
-        {
-            // For this particular MonoBehaviour, we only want one instance to exist at any time, so store a reference to it in a static property
-            //   and destroy any that are created while one already exists.
-
-            Plugin.Log?.Debug($"{this.name}: Awake()");
-#if DEBUG
-            foreach (var cam in Resources.FindObjectsOfTypeAll<Camera>()) {
-                Plugin.Log.Debug($"{cam.name} : {cam}");
-            }
-#endif
-            var cam1 = Resources.FindObjectsOfTypeAll<Camera>().FirstOrDefault(x => x.name == "MainCamera");
-            this._targetGO = new GameObject("Noctice");
-            this._targetGO.transform.SetParent(cam1.transform, false);
-            this._targetGO.transform.localPosition = PluginConfig.Instance.TargetOffset;
-        }
 #if DEBUG
         private IEnumerator Start()
         {
@@ -221,8 +212,6 @@ namespace AutoScreenShot
             }
         }
 #endif
-
-
         /// <summary>
         /// Called every frame if the script is enabled.
         /// </summary>
