@@ -58,6 +58,9 @@ namespace AutoScreenShot
             if (PluginConfig.Instance.NoUI) {
                 this._ssCamera.cullingMask &= ~(1 << s_ui_Layer);
             }
+            if (!PluginConfig.Instance.IncludeUI6) {
+                this._ssCamera.cullingMask &= ~(1 << s_mod_Layer);
+            }
             this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
             this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
             this._saveType = PluginConfig.Instance.Extention;
@@ -186,6 +189,7 @@ namespace AutoScreenShot
         private ImageExtention _saveType;
         private static readonly int[] s_aaNums = { 1, 2, 4, 8 };
         private const int s_ui_Layer = 5;
+        private const int s_mod_Layer = 6;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
