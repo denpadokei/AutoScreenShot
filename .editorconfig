@@ -99,6 +99,7 @@ csharp_style_prefer_switch_expression = false
 
 # Null チェック設定
 csharp_style_conditional_delegate_call = true
+csharp_style_prefer_parameter_null_checking = true
 
 # 修飾子設定
 csharp_prefer_static_local_function = true
@@ -108,6 +109,7 @@ csharp_preferred_modifier_order = public,private,protected,internal,static,exter
 csharp_prefer_braces = true
 csharp_prefer_simple_using_statement = false
 csharp_style_namespace_declarations = block_scoped
+csharp_style_prefer_method_group_conversion = true
 
 # 式レベルの設定
 csharp_prefer_simple_default_expression = true:silent

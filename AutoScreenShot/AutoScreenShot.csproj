@@ -135,7 +135,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
-    <None Include="Directory.Build.targets" Condition="Exists('Directory.Build.targets')" />
     <None Include="AutoScreenShot.csproj.user" Condition="Exists('AutoScreenShot.csproj.user')" />
     <EmbeddedResource Include="Views\SettingViewController.bsml">
       <DependentUpon>SettingViewController.cs</DependentUpon>
@@ -143,7 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
-      <Version>1.2.3</Version>
+      <Version>2.0.0-beta4</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
