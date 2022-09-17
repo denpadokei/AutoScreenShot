@@ -3,6 +3,7 @@
     <button text='Clear screen shot chache' on-click='clear' />
     <toggle-setting text='Enable' value='enable'></toggle-setting>
     <toggle-setting text='No UI' value='no-ui'></toggle-setting>
+    <toggle-setting text='Include HMD only object' value='include-hmd-only-object'></toggle-setting>
     <toggle-setting text='Show in menu' value='show-in-menu'></toggle-setting>
     <toggle-setting text='Overlap to menu' value='menu-overlap'></toggle-setting>
     <slider-setting text='Picture count' value ='pictuer-count' integer-only='true' min='-1' max='500' hover-hint='-1 = unlimited'></slider-setting>

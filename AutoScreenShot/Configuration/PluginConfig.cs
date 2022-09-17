@@ -14,7 +14,7 @@ namespace AutoScreenShot.Configuration
         public static PluginConfig Instance { get; set; }
         public virtual bool Enable { get; set; } = true;
         public virtual bool NoUI { get; set; } = false;
-        public virtual bool IncludeUI6 { get; set; } = true;
+        public virtual bool IncludeHMDOnlyObject { get; set; } = true;
         public virtual int MinSec { get; set; } = 6;
         public virtual int MaxSec { get; set; } = 120;
         public virtual int PositionScale { get; set; } = 10;

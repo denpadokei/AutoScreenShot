@@ -19,6 +19,7 @@ namespace AutoScreenShot.Views
         {
             this.Enable = PluginConfig.Instance.Enable;
             this.NoUI = PluginConfig.Instance.NoUI;
+            this.IncludeHMDObject = PluginConfig.Instance.IncludeHMDOnlyObject;
             this.ShowInMenu = PluginConfig.Instance.ShowPictureInMenu;
             this.MenuOverlap = PluginConfig.Instance.MenuPictureOverlap;
             this.MinFov = PluginConfig.Instance.MinFoV;
@@ -40,6 +41,7 @@ namespace AutoScreenShot.Views
         {
             this.Enable = obj.Enable;
             this.NoUI = obj.NoUI;
+            this.IncludeHMDObject = obj.IncludeHMDOnlyObject;
             this.ShowInMenu = obj.ShowPictureInMenu;
             this.MenuOverlap = obj.MenuPictureOverlap;
             this.MinFov = obj.MinFoV;
@@ -66,6 +68,9 @@ namespace AutoScreenShot.Views
             }
             else if (e == nameof(this.NoUI)) {
                 PluginConfig.Instance.NoUI = this.NoUI;
+            }
+            else if (e == nameof(this.IncludeHMDObject)) {
+                PluginConfig.Instance.IncludeHMDOnlyObject = this.IncludeHMDObject;
             }
             else if (e == nameof(this.ShowInMenu)) {
                 PluginConfig.Instance.ShowPictureInMenu = this.ShowInMenu;
@@ -111,6 +116,17 @@ namespace AutoScreenShot.Views
             get => this._noUI;
 
             set => this.SetProperty(ref this._noUI, value);
+        }
+
+        /// <summary>HMDのみ映るGameObjectを含むかどうか を取得、設定</summary>
+        private bool _includeHMDObject;
+        [UIValue("include-hmd-only-object")]
+        /// <summary>HMDのみ映るGameObjectを含むかどうか を取得、設定</summary>
+        public bool IncludeHMDObject
+        {
+            get => this._includeHMDObject;
+
+            set => this.SetProperty(ref this._includeHMDObject, value);
         }
 
 
