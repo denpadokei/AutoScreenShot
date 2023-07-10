@@ -56,7 +56,7 @@ namespace AutoScreenShot.Views
             }
 
             field = newValue;
-            HMMainThreadDispatcher.instance.Enqueue(() => this.OnPropertyChanged(memberName));
+            MainThreadInvoker.Instance.Enqueue(() => this.OnPropertyChanged(memberName));
             return true;
         }
 
