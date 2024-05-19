@@ -32,6 +32,7 @@ namespace AutoScreenShot.Configuration
         [UseConverter(typeof(Vector2Converter))]
         public virtual Vector2 PictuerRenderSize { get; set; } = new Vector2(1920, 1080);
         public virtual int AntiAliasing { get; set; } = 1;
+        public virtual int ReadSplit { get; set; } = 4;
 
         public event Action<PluginConfig> OnConfigChanged;
         /// <summary>
