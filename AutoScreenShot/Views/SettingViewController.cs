@@ -25,7 +25,7 @@ namespace AutoScreenShot.Views
             this.MinFov = PluginConfig.Instance.MinFoV;
             this.MaxFov = PluginConfig.Instance.MaxFoV;
             this.PictureCount = PluginConfig.Instance.PictureCount;
-            BSMLSettings.instance.AddSettingsMenu("AutoScreenShot", this.ResourceName, this);
+            BSMLSettings.Instance.AddSettingsMenu("AutoScreenShot", this.ResourceName, this);
         }
         private void OnDisable()
         {
