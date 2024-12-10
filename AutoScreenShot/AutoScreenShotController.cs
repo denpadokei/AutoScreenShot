@@ -64,6 +64,7 @@ namespace AutoScreenShot
             }
             this._ssCamera.depthTextureMode = (DepthTextureMode.Depth | DepthTextureMode.DepthNormals | DepthTextureMode.MotionVectors);
             this._ssCamera.targetTexture = new RenderTexture(2, 2, 24);
+            this._ssCamera.enabled = false;
             this._saveType = PluginConfig.Instance.Extention;
 #if DEBUG
             foreach (var item in this._ssCamera.gameObject.GetComponentsInChildren<MonoBehaviour>()) {
@@ -119,6 +120,7 @@ namespace AutoScreenShot
             this._isReadSave = true;
             this._saveCount = 0;
             this._saveDataSize = 0;
+            this._ssCamera.Render();
         }
         private void ReadbackShot()
         {
