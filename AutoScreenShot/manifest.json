@@ -3,7 +3,7 @@
   "id": "AutoScreenShot",
   "name": "AutoScreenShot",
   "author": "denpadokei",
-  "version": "3.0.2",
+  "version": "3.0.2-rc1",
   "description": "",
   "gameVersion": "1.39.1",
   "dependsOn": {
