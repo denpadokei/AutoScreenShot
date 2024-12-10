@@ -17,6 +17,8 @@ namespace AutoScreenShot
     /// Monobehaviours (scripts) are added to GameObjects.
     /// For a full list of Messages a Monobehaviour can receive from the game, see https://docs.unity3d.com/ScriptReference/MonoBehaviour.html.
     /// </summary>
+    /// <remarks><see cref="DefaultExecutionOrder"/>の値はVRIKの姿勢制御後におこないたいので最大値である32000に指定</remarks>
+    [DefaultExecutionOrder(32000)]
     public class AutoScreenShotController : MonoBehaviour, IAsyncInitializable
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -276,7 +278,7 @@ namespace AutoScreenShot
         /// <summary>
         /// Called every frame if the script is enabled.
         /// </summary>
-        private void Update()
+        protected virtual void Update()
         {
             if (this._isSetup) {
                 this._isSetup = false;
@@ -284,15 +286,20 @@ namespace AutoScreenShot
                 this.ReadbackShot();
                 return;
             }
+        }
+
+        protected virtual void LateUpdate()
+        {
             if (!this._isReadSave && PluginConfig.Instance.Enable && this._nextShootTime < DateTime.Now) {
                 this.SetupShot();
                 this._nextShootTime = DateTime.Now.AddSeconds(this._random.Next(this._minsec, this._maxsec));
             }
         }
+
         /// <summary>
         /// Called when the script is being destroyed.
         /// </summary>
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             if (this._isReadSave) {
                 RenderTexture.ReleaseTemporary(this._colorTexture);
